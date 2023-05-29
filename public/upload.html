@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="maincontainer">
+      <div class="contentcontainer">
+        <form id="video-form">
+          <p id="status"></p>
+          <h2>Upload Video</h2>
+          <table>
+            <tr>
+              <td>
+                <label for="video">Video:</label>
+              </td>
+              <td>
+                <input
+                  type="file"
+                  id="video"
+                  name="video"
+                  accept="video/mp4,video/x-m4v,video/*"
+                  placeholder="Video dir"
+                />
+              </td>
+            </tr>
+          </table>
+          <button type="submit">Upload</button>
+          <button onclick="updateVideos();">Refresh</button>
+        </form>
+        <div id="videos"></div>
+      </div>
+    </div>
+  </body>
+  <script>
+    const baseUrl = "http://localhost:5000";
+
+    // POST http://localhost:5000/compress-video with form data key: video-file
+    const form = document.getElementById("video-form");
+    const status = document.getElementById("status");
+    const videos = document.getElementById("videos");
+    form.addEventListener("submit", (e) => {
+      status.innerHTML = "Uploading...";
+      e.preventDefault();
+      const formData = new FormData(form);
+
+      // if file is empty return
+        if (!form.video.value) {
+          status.innerHTML = "Please select a video";
+          return;
+        }
+      fetch(`${baseUrl}/compress-video`, {
+        method: "POST",
+        body: formData,
+      })
+        .then((status.innerHTML = "Server is compressing..."))
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+        })
+        .finally(() => {
+            form.reset();
+          status.innerHTML = "Done!";
+          updateVideos();
+        });
+    });
+
+    const updateVideos = () => {
+        videos.innerHTML = "";
+        var size = 0;
+        let listofvideotitles = fetch(`${baseUrl}/video`)
+        .then((response) => response.json())
+        .then((data) => {
+            console.log(data);
+            size = Object.keys(data).length;
+            console.log(data[0]);
+            for (let i = 0; i < size; i++) {
+                videos.innerHTML += `<video width="320" height="240" controls preload="metadata">
+                <source src="${baseUrl}/video/${data[i]}" type="video/mp4">
+                Your browser does not support the video tag.
+                </video>`;
+            }
+        })
+    };
+    updateVideos();
+  </script>
+</html>
